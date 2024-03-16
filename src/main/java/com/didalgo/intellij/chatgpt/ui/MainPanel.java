@@ -65,28 +65,43 @@ public class MainPanel implements ChatMessageListener {
 
     public MainPanel(@NotNull Project project, ConfigurationPage configuration) {
         myProject = project;
+        // 用于请求gpt服务获取响应的处理器
         conversationHandler = new MainConversationHandler(this);
+        // 用于组装要发送gpt的message（因为 message 来自于很多地方，比如用户输入、鼠标选择等等），然后调用 MainConversationHandler 发送请求
         chatLink = new ChatLinkService(project, conversationHandler, configuration.withSystemPrompt(() -> getContentPanel().getSystemMessage()));
+        // MainPanel 实现了 ChatMessageListener 接口，所以它本身会处理 gpt 响应的数据，具体看下方的 @Override 的方法
         chatLink.addChatMessageListener(this);
+        // 这个 ContextAwareSnippetizer 用于保存当前编辑器选中的代码片段
         ContextAwareSnippetizer snippetizer = ApplicationManager.getApplication().getService(ContextAwareSnippetizer.class);
+        // toolWindow 中点击 send 触发的动作
         SubmitListener submitAction = new SubmitListener(chatLink, this::getSearchText, snippetizer);
 
+        // 一个像素的分割线，分割内容区域和下方的提交区域
         splitter = new OnePixelSplitter(true,.98f);
         splitter.setDividerWidth(1);
+        // 放入一个 key / value 数据到 splitter 中，具体干什么用暂时不知道
         splitter.putClientProperty(HyperlinkListener.class, submitAction);
 
+        // 可展开的输入框，就是 toolWindow 下方那个输入框，可以点击扩展图标变大
         searchTextField = new ExpandableTextFieldExt(project);
+        // 拿到 textField 的 document 对象用于控制输入的文本
         var searchTextDocument = (AbstractDocument) searchTextField.getDocument();
+        // 加入了一个过滤器来控制换行的行为
         searchTextDocument.setDocumentFilter(new NewlineFilter());
         searchTextDocument.putProperty("filterNewlines", Boolean.FALSE);
         searchTextDocument.addDocumentListener(new ExpandableTextFieldExt.ExpandOnMultiLinePaste(searchTextField));
         searchTextField.setMonospaced(false);
+        // 设置监听器，提交时触发
         searchTextField.addActionListener(submitAction);
+        // 注册提交的快捷键
         searchTextField.registerKeyboardAction(submitAction, SUBMIT_KEYSTROKE, JComponent.WHEN_FOCUSED);
+        // 设置 placeholder
         searchTextField.getEmptyText().setText("Type a prompt here");
         button = new JButton(submitAction);
+        // 设置按钮需要设置黑暗风格
         button.setUI(new DarculaButtonUI());
 
+        // 停止响应按钮
         stopGenerating = new JButton("Stop", AllIcons.Actions.Suspend);
         stopGenerating.addActionListener(e -> {
             aroundRequest(false);
@@ -98,15 +113,19 @@ public class MainPanel implements ChatMessageListener {
         });
         stopGenerating.setUI(new DarculaButtonUI());
 
+        // 最下方提交框和按钮的面板
         actionPanel = new JPanel(new BorderLayout());
-        progressBar = new JProgressBar();
-        progressBar.setVisible(false);
         actionPanel.add(createContextSnippetsComponent(), BorderLayout.NORTH);
         actionPanel.add(searchTextField, BorderLayout.CENTER);
         actionPanel.add(button, BorderLayout.EAST);
+
+        // 上方的消息面板
+        progressBar = new JProgressBar();
+        progressBar.setVisible(false);
         contentPanel = new MessageGroupComponent(chatLink, project);
         contentPanel.add(progressBar, BorderLayout.SOUTH);
 
+        // 设置分割线
         splitter.setFirstComponent(contentPanel);
         splitter.setSecondComponent(actionPanel);
     }

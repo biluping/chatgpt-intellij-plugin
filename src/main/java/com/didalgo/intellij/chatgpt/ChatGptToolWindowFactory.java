@@ -48,9 +48,11 @@ public class ChatGptToolWindowFactory implements ToolWindowFactory, DumbAware {
         gpt4.putUserData(ACTIVE_TAB, ModelPage.GPT_4);
         gpt4.setCloseable(false);
 
+        // 加入两次，就会有两个 tab
         toolWindow.getContentManager().addContent(gpt35Turbo);
         toolWindow.getContentManager().addContent(gpt4);
 
+        // 浏览器 tab
         BrowserContent browserToolWindow = null;
         try {
             browserToolWindow = new BrowserContent(project);
@@ -62,6 +64,7 @@ public class ChatGptToolWindowFactory implements ToolWindowFactory, DumbAware {
             log.warn("'ChatGPT Online' is disabled due to: " + e.getMessage());
         }
 
+        // 获取设置中设置的第一个位置的 tab，然后放到 project 的 userData 中
         // Set the default component. It require the 1st container
         ModelPage firstContent = ModelPage.of(PropertiesComponent.getInstance().getValue(ACTIVE_CONTENT_KEY, ModelPage.GPT_3_5.name()));
         switch (firstContent.name()) {
@@ -70,6 +73,7 @@ public class ChatGptToolWindowFactory implements ToolWindowFactory, DumbAware {
             case ModelPage.Of.ONLINE  -> Optional.ofNullable(browserToolWindow).ifPresent(win -> project.putUserData(ChatLink.KEY, win.getChatLink()));
         }
 
+        // tab 切换后，更新 project 的 userData
         // Add the selection listener
         var _browserToolWindow = browserToolWindow;
         toolWindow.addContentManagerListener(new ContentManagerListener() {
@@ -87,6 +91,7 @@ public class ChatGptToolWindowFactory implements ToolWindowFactory, DumbAware {
             }
         });
 
+        // 不知道在干什么，总之应该是处理 tab 切换的
         List<AnAction> actionList = new ArrayList<>();
         actionList.add(new SettingsAction(ChatGptBundle.message("action.settings")) {
             @Override
