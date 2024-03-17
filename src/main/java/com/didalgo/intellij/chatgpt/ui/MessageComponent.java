@@ -38,7 +38,7 @@ import java.awt.event.MouseEvent;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 对话框中，没一个对话对应的组件就是 MessageComponent
+ * 对话框中，每一个对话对应的组件就是 MessageComponent
  */
 public class MessageComponent extends JBPanel<MessageComponent> {
 

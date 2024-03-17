@@ -21,11 +21,13 @@ import java.util.function.Supplier;
 import static com.didalgo.intellij.chatgpt.chat.ChatMessageUtils.countTokens;
 import static com.didalgo.intellij.chatgpt.chat.ChatMessageUtils.isRoleSystem;
 
+// 这个 Context 保存了整个 Conversation 所有的对话
 public class ChatLinkState implements ConversationContext {
 
     private final LinkedList<ChatMessage> chatMessages = new LinkedList<>();
     private volatile List<? extends TextContent> lastSentTextFragments = List.of();
     private volatile TextSubstitutor textSubstitutor = TextSubstitutor.NONE;
+    // 相关设置
     private final ConfigurationPage configuration;
 
 

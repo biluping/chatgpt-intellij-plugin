@@ -89,6 +89,7 @@ public class ChatGptHandler {
                 .observeOn(Schedulers.computation());
     }
 
+    // 调用 gpt 请求的地方
     public Flowable<?> handle(ConversationContext ctx, ChatMessageEvent.Initiating event, ChatMessageListener listener) {
         var openAiService = OpenAIServiceHolder.getOpenAiService(ctx.getModelPage());
         var flowHandler = new ChatCompletionHandler(listener);
@@ -97,6 +98,7 @@ public class ChatGptHandler {
         if (Boolean.TRUE.equals(request.getStream())) {
             return openAiService.streamChatCompletion(request)
             //return streamTestChatCompletion(TEST_MARKDOWN)
+                    // 开始获取流后触发监听器 exchangeStarted 方法
                     .doOnSubscribe(flowHandler.onSubscribe(event))
                     .doOnError(flowHandler.onError())
                     .doOnComplete(flowHandler.onComplete(ctx))

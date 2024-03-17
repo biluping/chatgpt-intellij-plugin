@@ -22,6 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * 提交动作
+ */
 public class SubmitListener extends AbstractAction implements OptionAction, HyperlinkListener {
 
     private final ChatLink chatLink;
@@ -35,13 +38,16 @@ public class SubmitListener extends AbstractAction implements OptionAction, Hype
         this.snippetizer = snippetizer;
     }
 
+    // 点击按钮触发提交
     @Override
     public void actionPerformed(ActionEvent e) {
         submitPrompt(prompt.get());
     }
 
+    // 提交动作
     public void submitPrompt(String prompt) {
         Project project = chatLink.getProject();
+        // 获取输入内容、代码选中片段，发送请求
         chatLink.pushMessage(prompt, snippetizer.fetchSnippets(project));
     }
 

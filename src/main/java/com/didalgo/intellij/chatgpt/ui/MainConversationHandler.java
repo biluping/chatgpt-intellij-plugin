@@ -25,14 +25,23 @@ public class MainConversationHandler implements ConversationHandler {
         this.mainPanel = mainPanel;
     }
 
+    /**
+     * 真正请求 gpt 的地方
+     * @param ctx
+     * @param event 事件中保存了消息的内容
+     * @param listener 消息过来之后执行的监听器，实际上是 MainPanel
+     * @return 返回一个用于暂停数据流的对象
+     */
     @Override
     public Disposable push(ConversationContext ctx, ChatMessageEvent.Starting event, ChatMessageListener listener) {
+        // 组装 request
         var application = ApplicationManager.getApplication();
         var userMessage = event.getUserMessage();
         var chatCompletionRequestProvider = application.getService(ChatCompletionRequestProvider.class);
         var chatCompletionRequest = chatCompletionRequestProvider.chatCompletionRequest(ctx, userMessage)
                 .build();
 
+        // 发起请求
         return application.getService(ChatGptHandler.class)
                 .handle(ctx, event.initiating(chatCompletionRequest), listener)
                 .subscribeOn(Schedulers.io())

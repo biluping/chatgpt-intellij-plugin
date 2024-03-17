@@ -9,10 +9,12 @@ import java.util.Optional;
 
 public class CodeFragmentFactory {
 
+    // 从 editor 获取选中的内容
     public static Optional<CodeFragment> createFromSelection(Editor editor) {
         var selectionModel = editor.getSelectionModel();
         var text = "";
         if (selectionModel.hasSelection() && (text = selectionModel.getSelectedText()) != null && !text.isBlank()) {
+            // 如果有，则封装成 CodeFragment
             return Optional.of(create(editor, text));
         }
         return Optional.empty();
@@ -29,6 +31,7 @@ public class CodeFragmentFactory {
         return create(editor, editor.getDocument().getText());
     }
 
+    // 封装成 CodeFragment，相关属性有文件扩展、文件url，选中内容
     public static CodeFragment create(Editor editor, String textContent) {
         @SuppressWarnings("RedundantCast")
         var file = ((EditorEx) editor).getVirtualFile();

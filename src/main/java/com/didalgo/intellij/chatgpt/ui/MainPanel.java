@@ -48,17 +48,26 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class MainPanel implements ChatMessageListener {
 
+    // 最下方可变大的输入框
     private final ExpandableTextFieldExt searchTextField;
+    // 提交按钮
     private final JButton button;
+    // 停止按钮
     private final JButton stopGenerating;
+    // 上面对话框面板
     private final MessageGroupComponent contentPanel;
     private final JProgressBar progressBar;
+    // 分割线，
     private final OnePixelSplitter splitter;
     private final Project myProject;
+    // 提交部分的面板
     private JPanel actionPanel;
+    // 保存当前正在进行中的请求
     private volatile Object requestHolder;
+    // 请求 gpt 处理器
     private final MainConversationHandler conversationHandler;
     private ListStack contextStack;
+    // 组装消息的东西
     private final ChatLink chatLink;
 
     public static final KeyStroke SUBMIT_KEYSTROKE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, CTRL_DOWN_MASK);
@@ -201,12 +210,15 @@ public class MainPanel implements ChatMessageListener {
         return getChatLink().getConversationContext().getModelType();
     }
 
+    // 在请求 gpt 前的监听器回调
     @Override
     public void exchangeStarting(ChatMessageEvent.Starting event) throws ChatExchangeAbortException {
+        // 检查 api key 是否设置
         if (!presetCheck()) {
             throw new ChatExchangeAbortException("Preset check failed");
         }
 
+        // 把问题放入对话列表，加入一个 Thinking... 的对话
         TextFragment userMessage = TextFragment.of(event.getUserMessage().getContent());
         question = new MessageComponent(userMessage, null);
         answer = new MessageComponent(TextFragment.of("Thinking..."), getModelType());
@@ -229,6 +241,7 @@ public class MainPanel implements ChatMessageListener {
         SwingUtilities.invokeLater(contentPanel::updateLayout);
     }
 
+    // 检查 api 是否设置
     protected boolean presetCheck() {
         OpenAISettingsState instance = OpenAISettingsState.getInstance();
         String page = getChatLink().getConversationContext().getModelPage();
@@ -245,11 +258,13 @@ public class MainPanel implements ChatMessageListener {
         return true;
     }
 
+    // 流数据正在源源不断过来，每部分数据都会调用这个
     @Override
     public void responseArriving(ChatMessageEvent.ResponseArriving event) {
         setContent(event.getPartialResponseChoices());
     }
 
+    // 流数据完成后回调
     @Override
     public void responseArrived(ChatMessageEvent.ResponseArrived event) {
         setContent(event.getResponseChoices());
@@ -265,6 +280,7 @@ public class MainPanel implements ChatMessageListener {
 
     @Override
     public void exchangeFailed(ChatMessageEvent.Failed event) {
+        // 显示错误信息
         if (answer != null) {
             answer.setErrorContent(getErrorMessage(event.getCause()));
         }

@@ -16,12 +16,15 @@ import java.util.List;
 
 public class TextEditorSelectionAwareSnippetizer implements ContextAwareSnippetizer {
 
+    // 获取到鼠标选中的代码片段
     @Override
     public List<CodeFragment> fetchSnippets(Project project) {
         List<CodeFragment> selectedFragments = new ArrayList<>();
 
+        // 遍历每个文件编辑器
         for (FileEditor editor : FileEditorManager.getInstance(project).getSelectedEditors()) {
             if (editor instanceof TextEditor textEditor) {
+                // 如果有选中，则添加到数组
                 CodeFragmentFactory.createFromSelection(textEditor.getEditor()).ifPresent(selectedFragments::add);
             }
         }
