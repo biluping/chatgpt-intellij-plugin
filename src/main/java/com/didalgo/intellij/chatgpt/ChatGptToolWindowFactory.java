@@ -43,53 +43,53 @@ public class ChatGptToolWindowFactory implements ToolWindowFactory, DumbAware {
         gpt35Turbo.putUserData(ACTIVE_TAB, ModelPage.GPT_3_5);
         gpt35Turbo.setCloseable(false);
 
-        MainPanel gpt4ToolWindow = new MainPanel(project, settings.getGpt4Config());
-        Content gpt4 = contentFactory.createContent(gpt4ToolWindow.init(), GPT4_CONTENT_NAME, false);
-        gpt4.putUserData(ACTIVE_TAB, ModelPage.GPT_4);
-        gpt4.setCloseable(false);
+//        MainPanel gpt4ToolWindow = new MainPanel(project, settings.getGpt4Config());
+//        Content gpt4 = contentFactory.createContent(gpt4ToolWindow.init(), GPT4_CONTENT_NAME, false);
+//        gpt4.putUserData(ACTIVE_TAB, ModelPage.GPT_4);
+//        gpt4.setCloseable(false);
 
         // 加入两次，就会有两个 tab
         toolWindow.getContentManager().addContent(gpt35Turbo);
-        toolWindow.getContentManager().addContent(gpt4);
+//        toolWindow.getContentManager().addContent(gpt4);
 
         // 浏览器 tab
-        BrowserContent browserToolWindow = null;
-        try {
-            browserToolWindow = new BrowserContent(project);
-            Content browser = contentFactory.createContent(browserToolWindow.getContentPanel(), ONLINE_CHATGPT_CONTENT_NAME, false);
-            browser.putUserData(ACTIVE_TAB, ModelPage.ONLINE);
-            browser.setCloseable(false);
-            toolWindow.getContentManager().addContent(browser);
-        } catch (IllegalStateException e) {
-            log.warn("'ChatGPT Online' is disabled due to: " + e.getMessage());
-        }
+//        BrowserContent browserToolWindow = null;
+//        try {
+//            browserToolWindow = new BrowserContent(project);
+//            Content browser = contentFactory.createContent(browserToolWindow.getContentPanel(), ONLINE_CHATGPT_CONTENT_NAME, false);
+//            browser.putUserData(ACTIVE_TAB, ModelPage.ONLINE);
+//            browser.setCloseable(false);
+//            toolWindow.getContentManager().addContent(browser);
+//        } catch (IllegalStateException e) {
+//            log.warn("'ChatGPT Online' is disabled due to: " + e.getMessage());
+//        }
 
-        // 获取设置中设置的第一个位置的 tab，然后放到 project 的 userData 中
+        // 获取设置中设置的第一个位置的 tab，将 ChatLink 放到 project 的 userData 中，后面方便鼠标右键 Explain / Find Bug 等操作可以直接找到 ChatLink 进行发送消息
         // Set the default component. It require the 1st container
         ModelPage firstContent = ModelPage.of(PropertiesComponent.getInstance().getValue(ACTIVE_CONTENT_KEY, ModelPage.GPT_3_5.name()));
         switch (firstContent.name()) {
             case ModelPage.Of.GPT_3_5 -> project.putUserData(ChatLink.KEY, gpt35TurboToolWindow.getChatLink());
-            case ModelPage.Of.GPT_4   -> project.putUserData(ChatLink.KEY, gpt4ToolWindow.getChatLink());
-            case ModelPage.Of.ONLINE  -> Optional.ofNullable(browserToolWindow).ifPresent(win -> project.putUserData(ChatLink.KEY, win.getChatLink()));
+//            case ModelPage.Of.GPT_4   -> project.putUserData(ChatLink.KEY, gpt4ToolWindow.getChatLink());
+//            case ModelPage.Of.ONLINE  -> Optional.ofNullable(browserToolWindow).ifPresent(win -> project.putUserData(ChatLink.KEY, win.getChatLink()));
         }
 
         // tab 切换后，更新 project 的 userData
         // Add the selection listener
-        var _browserToolWindow = browserToolWindow;
-        toolWindow.addContentManagerListener(new ContentManagerListener() {
-            @Override
-            public void selectionChanged(@NotNull ContentManagerEvent event) {
-                ModelPage page = event.getContent().getUserData(ACTIVE_TAB);
-                if (page != null) {
-                    switch (page.name()) {
-                        case ModelPage.Of.GPT_3_5 -> project.putUserData(ChatLink.KEY, gpt35TurboToolWindow.getChatLink());
-                        case ModelPage.Of.GPT_4   -> project.putUserData(ChatLink.KEY, gpt4ToolWindow.getChatLink());
-                        case ModelPage.Of.ONLINE  -> Optional.ofNullable(_browserToolWindow).ifPresent(win -> project.putUserData(ChatLink.KEY, win.getChatLink()));
-                    }
-                }
-                PropertiesComponent.getInstance(project).setValue(ACTIVE_CONTENT_KEY, (page == null)? null: page.name());
-            }
-        });
+//        var _browserToolWindow = browserToolWindow;
+//        toolWindow.addContentManagerListener(new ContentManagerListener() {
+//            @Override
+//            public void selectionChanged(@NotNull ContentManagerEvent event) {
+//                ModelPage page = event.getContent().getUserData(ACTIVE_TAB);
+//                if (page != null) {
+//                    switch (page.name()) {
+//                        case ModelPage.Of.GPT_3_5 -> project.putUserData(ChatLink.KEY, gpt35TurboToolWindow.getChatLink());
+//                        case ModelPage.Of.GPT_4   -> project.putUserData(ChatLink.KEY, gpt4ToolWindow.getChatLink());
+//                        case ModelPage.Of.ONLINE  -> Optional.ofNullable(_browserToolWindow).ifPresent(win -> project.putUserData(ChatLink.KEY, win.getChatLink()));
+//                    }
+//                }
+//                PropertiesComponent.getInstance(project).setValue(ACTIVE_CONTENT_KEY, (page == null)? null: page.name());
+//            }
+//        });
 
         // 不知道在干什么，总之应该是处理 tab 切换的
         List<AnAction> actionList = new ArrayList<>();

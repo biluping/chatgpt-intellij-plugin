@@ -254,7 +254,7 @@
             </constraints>
             <properties>
               <enabled value="true"/>
-              <text value="&lt;html&gt;Example endpoints:&lt;br&gt;• OpenAI: https://api.openai.com/v1/chat/completions&lt;br&gt;• Azure: https://XXX.openai.azure.com/openai/deployments/YYY/chat/completions?api-version=2023-03-15-preview"/>
+              <text value="&lt;html&gt;Example endpoints:&lt;br&gt;&#10;• OpenAI: https://api.openai.com&lt;br&gt;&#10;• ChatNext 代理: https://api.nextchat.dev/api/proxy/openai&lt;br&gt;&#10;• Azure: https://XXX.openai.azure.com/openai/deployments/YYY/chat/completions?api-version=2023-03-15-preview"/>
             </properties>
           </component>
         </children>

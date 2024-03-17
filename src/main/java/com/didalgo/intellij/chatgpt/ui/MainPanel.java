@@ -88,7 +88,8 @@ public class MainPanel implements ChatMessageListener {
         // 一个像素的分割线，分割内容区域和下方的提交区域
         splitter = new OnePixelSplitter(true,.98f);
         splitter.setDividerWidth(1);
-        // 放入一个 key / value 数据到 splitter 中，具体干什么用暂时不知道
+        // 放入一个 submitAction 到 splitter 中，这样当在消息组件中点击超链接后，消息组件就能通过继承关系找到 splitter 从而找到 submitAction 进行超链接处理
+        // 主要是一开始的 suggestions 中的超链接会用到
         splitter.putClientProperty(HyperlinkListener.class, submitAction);
 
         // 可展开的输入框，就是 toolWindow 下方那个输入框，可以点击扩展图标变大
@@ -100,7 +101,7 @@ public class MainPanel implements ChatMessageListener {
         searchTextDocument.putProperty("filterNewlines", Boolean.FALSE);
         searchTextDocument.addDocumentListener(new ExpandableTextFieldExt.ExpandOnMultiLinePaste(searchTextField));
         searchTextField.setMonospaced(false);
-        // 设置监听器，提交时触发
+        // 设置监听器，回车提交时触发
         searchTextField.addActionListener(submitAction);
         // 注册提交的快捷键
         searchTextField.registerKeyboardAction(submitAction, SUBMIT_KEYSTROKE, JComponent.WHEN_FOCUSED);

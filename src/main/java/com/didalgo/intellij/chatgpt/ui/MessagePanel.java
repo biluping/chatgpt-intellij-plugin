@@ -57,6 +57,7 @@ public class MessagePanel extends HtmlPanel implements MessageRenderer {
         return UIUtil.getLabelFont();
     }
 
+    // 当点击文本中的超链接触发
     @Override
     public void hyperlinkUpdate(HyperlinkEvent e) {
         if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
