@@ -19,6 +19,9 @@ import javax.swing.text.*;
 import javax.swing.text.html.HTML;
 import java.awt.*;
 
+/**
+ * 每一个对话中间文字部分的组件
+ */
 public class MessagePanel extends HtmlPanel implements MessageRenderer {
 
     private volatile TextFragment text;

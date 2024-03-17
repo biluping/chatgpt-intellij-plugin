@@ -37,10 +37,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 对话框中，没一个对话对应的组件就是 MessageComponent
+ */
 public class MessageComponent extends JBPanel<MessageComponent> {
 
     private static final Logger LOG = Logger.getInstance(MessageComponent.class);
 
+    // 没一个对话中间文字部分的组件
     private final MessagePanel component = new MessagePanel();
 
     private volatile TextFragment text;
@@ -48,12 +52,15 @@ public class MessageComponent extends JBPanel<MessageComponent> {
     public MessageComponent(TextFragment text, ModelType model) {
         this.text = text;
         var fromUser = (model == null);
+
+        // 设置一些样式
         setDoubleBuffered(true);
         setOpaque(true);
         setBackground(fromUser ? new JBColor(0xF7F7F7, 0x3C3F41) : new JBColor(0xEBEBEB, 0x2d2f30));
         setBorder(JBUI.Borders.empty(JBUI.scale(4), JBUI.scale(1)));
         setLayout(new BorderLayout(JBUI.scale(2), 0));
 
+        // 设置头像
         if (OpenAISettingsState.getInstance().isEnableAvatar()) {
             JPanel iconPanel = new JPanel(new BorderLayout());
             iconPanel.setBorder(JBUI.Borders.empty(JBUI.scale(7), JBUI.scale(7), JBUI.scale(7), 0));
@@ -71,12 +78,15 @@ public class MessageComponent extends JBPanel<MessageComponent> {
             iconPanel.add(new JBLabel(IconUtil.scale(imageIcon, this, 1.25f)), BorderLayout.NORTH);
             add(iconPanel, BorderLayout.WEST);
         }
+
+        // 中间文字部分
         JPanel centerPanel = new JPanel(new VerticalLayout(JBUI.scale(0)));
         centerPanel.setOpaque(false);
         centerPanel.setBorder(JBUI.Borders.emptyLeft(JBUI.scale(5)));
         centerPanel.add(createContentComponent(text, fromUser));
         add(centerPanel, BorderLayout.CENTER);
 
+        // 最右边 copy 按钮
         JPanel actionPanel = new JPanel(new BorderLayout());
         actionPanel.setOpaque(false);
         actionPanel.setBorder(JBUI.Borders.empty(JBUI.scale(7), 0, 0, JBUI.scale(10)));
@@ -143,6 +153,7 @@ public class MessageComponent extends JBPanel<MessageComponent> {
         return buf.toString();
     }
 
+    // 创建中间文字部分组件
     public Component createContentComponent(TextFragment content, boolean fromUser) {
 
         component.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, java.lang.Boolean.TRUE);

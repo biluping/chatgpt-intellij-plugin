@@ -37,11 +37,18 @@ import java.awt.event.*;
 
 import static com.didalgo.intellij.chatgpt.settings.OpenAISettingsState.BASE_PROMPT;
 
+/**
+ * toolwindow 中展示消息的 panel，也就是除了最下方输入框和提交按钮，就是这部分内容了
+ */
 public class MessageGroupComponent extends JBPanel<MessageGroupComponent> implements NullableComponent, SystemMessageHolder {
+    // 消息实际都放到这个垂直面板中
     private final JPanel myList = new JPanel(new VerticalLayout(0));
+    // 展示消息的滚动面板，纵向根据需要加滚动条，横向不显示滚动条
     private final JBScrollPane myScrollPane = new JBScrollPane(myList, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                                       ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    // 记录了滚动位置
     private int myScrollValue = 0;
+    // 上方 System Role 提示词输入框
     private JBTextField systemRole;
     private final Project project;
     private final ChatLink chatLink;
@@ -49,24 +56,30 @@ public class MessageGroupComponent extends JBPanel<MessageGroupComponent> implem
     public MessageGroupComponent(ChatLink chatLink, @NotNull Project project) {
         this.chatLink = chatLink;
         this.project = project;
+
+        // 设置一些样式
         setBorder(JBUI.Borders.empty());
         setLayout(new BorderLayout());
         setBackground(UIUtil.getListBackground());
 
         myScrollPane.getVerticalScrollBar().putClientProperty(JBScrollPane.IGNORE_SCROLLBAR_IN_INSETS, Boolean.TRUE);
+        // 给 ScrollPanel 设置监听器，当滚动条在底部的时候，页面变化一直滚动到底部，如果滑动滚动条到上方，则停止滚动到底部
         ScrollingTools.installAutoScrollToBottom(myScrollPane);
 
-        JPanel mainPanel = new JPanel(new BorderLayout(0, 0));
-        mainPanel.setOpaque(false);
-        mainPanel.setBorder(JBUI.Borders.emptyLeft(0));
-
-        if (true) {
+        // 这个代码块定义了 toolwindow 最上方的 System Role 区域组件
+        {
+            // 这个 panel 用于放 title 和下方这个 panel
             JPanel panel = new NonOpaquePanel(new GridLayout(0,1));
+
+            // 这个 panel 用于放输入框以及后面的保存、撤回按钮
             JPanel rolePanel = new NonOpaquePanel(new BorderLayout());
+
+            // system role 输入框
             systemRole = new JBTextField();
             OpenAISettingsState instance = OpenAISettingsState.getInstance();
             systemRole.setText(instance.gpt35RoleText);
             systemRole.setEnabled(false);
+            // 当鼠标移入时可以修改，鼠标移出后不可修改
             systemRole.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
@@ -79,6 +92,8 @@ public class MessageGroupComponent extends JBPanel<MessageGroupComponent> implem
                 }
             });
             rolePanel.add(systemRole, BorderLayout.CENTER);
+
+            // system role 右边的保存、撤回按钮
             DefaultActionGroup toolbarActions = new DefaultActionGroup();
             toolbarActions.add(new AnAction(AllIcons.Actions.MenuSaveall) {
                 @Override
@@ -99,6 +114,7 @@ public class MessageGroupComponent extends JBPanel<MessageGroupComponent> implem
             panel.add(rolePanel);
             panel.setBorder(JBUI.Borders.empty(0,8,10,0));
 
+            // 可折叠的 title 组件
             HideableTitledPanel cPanel = new HideableTitledPanel("System role: you can guide your assistant and define its behavior.", false);
             cPanel.setContentComponent(panel);
             cPanel.setOn(false);
@@ -106,33 +122,40 @@ public class MessageGroupComponent extends JBPanel<MessageGroupComponent> implem
             add(cPanel, BorderLayout.NORTH);
         }
 
+        // 这个 mainPanel 定义了中间对话消息的内容
+        JPanel mainPanel = new JPanel(new BorderLayout(0, 0));
+        mainPanel.setOpaque(false); // 设置透明
+        mainPanel.setBorder(JBUI.Borders.emptyLeft(0));
         add(mainPanel, BorderLayout.CENTER);
 
-        JBLabel myTitle = new JBLabel("Conversation");
-        myTitle.setForeground(JBColor.namedColor("Label.infoForeground", new JBColor(Gray.x80, Gray.x8C)));
-        myTitle.setFont(JBFont.label());
+        //这个代码块定义了 System Role 下方的 Conversion 和 New Chat
+        {
+            JBLabel myTitle = new JBLabel("Conversation");
+            myTitle.setForeground(JBColor.namedColor("Label.infoForeground", new JBColor(Gray.x80, Gray.x8C)));
+            myTitle.setFont(JBFont.label());
 
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(JBUI.Borders.empty(0,10,10,0));
+            LinkLabel<String> newChat = new LinkLabel<>("New chat", null);
+            newChat.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    myList.removeAll();
+                    addAssistantTipsIfEnabled(false);
+                    myList.updateUI();
+                    chatLink.getConversationContext().clear();
+                }
+            });
 
-        panel.add(myTitle, BorderLayout.WEST);
+            newChat.setFont(JBFont.label());
+            newChat.setBorder(JBUI.Borders.emptyRight(20));
 
-        LinkLabel<String> newChat = new LinkLabel<>("New chat", null);
-        newChat.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                myList.removeAll();
-                addAssistantTipsIfEnabled(false);
-                myList.updateUI();
-                chatLink.getConversationContext().clear();
-            }
-        });
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.setBorder(JBUI.Borders.empty(0, 10, 10, 0));
+            panel.add(myTitle, BorderLayout.WEST);
+            panel.add(newChat, BorderLayout.EAST);
+            mainPanel.add(panel, BorderLayout.NORTH);
+        }
 
-        newChat.setFont(JBFont.label());
-        newChat.setBorder(JBUI.Borders.emptyRight(20));
-        panel.add(newChat, BorderLayout.EAST);
-        mainPanel.add(panel, BorderLayout.NORTH);
-
+        // 将消息列表组件添加到 mainPanel
         myList.setOpaque(true);
         myList.setBackground(UIUtil.getListBackground());
         myList.setBorder(JBUI.Borders.emptyRight(0));
@@ -140,13 +163,19 @@ public class MessageGroupComponent extends JBPanel<MessageGroupComponent> implem
         myScrollPane.setBorder(JBUI.Borders.empty());
         mainPanel.add(myScrollPane);
         myScrollPane.getVerticalScrollBar().setAutoscrolls(true);
+        // 滚动后记录滚动的位置
         myScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> {
             myScrollValue = e.getValue();
         });
 
+        // 第一次进入时在消息框中展示提示
         addAssistantTipsIfEnabled(true);
     }
 
+    /**
+     * 在消息中间添加分割线
+     * @param comp
+     */
     public void addSeparator(JComponent comp) {
         SwingUtilities.invokeLater(() -> {
             JSeparator separator = new JSeparator();

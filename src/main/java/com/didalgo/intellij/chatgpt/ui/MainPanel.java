@@ -115,7 +115,7 @@ public class MainPanel implements ChatMessageListener {
 
         // 最下方提交框和按钮的面板
         actionPanel = new JPanel(new BorderLayout());
-        actionPanel.add(createContextSnippetsComponent(), BorderLayout.NORTH);
+        actionPanel.add(createContextSnippetsComponent(), BorderLayout.NORTH);  // 选择文本，右键 add：ChatGpt: add Context 后出现的文件样式
         actionPanel.add(searchTextField, BorderLayout.CENTER);
         actionPanel.add(button, BorderLayout.EAST);
 
@@ -130,6 +130,7 @@ public class MainPanel implements ChatMessageListener {
         splitter.setSecondComponent(actionPanel);
     }
 
+    // 创建选中文件列表组件 ChatGpt: add Context 触发
     private JComponent createContextSnippetsComponent() {
         // Creating an instance of ListPopupShower for testing
         ListStackFactory listStackFactory = new ListStackFactory();
